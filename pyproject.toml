@@ -12,3 +12,9 @@ dependencies = [
 dev = [
     "ipykernel>=7.1.0",
 ]
+
+[project.scripts]
+track-sorter = "track_sorter:cli"
+
+[tools.setuptools.package.find]
+where = ["src"]

@@ -1,4 +1,3 @@
-import argparse
 import pathlib
 import ffmpeg
 
@@ -51,7 +50,10 @@ def concat_tracks(tracklist: list[pathlib.Path], output_file: pathlib.Path) -> N
     except Exception as e:
         return e
 
-if __name__ == '__main__':
+def cli():
+    import argparse
+    import pathlib
+
     parser = argparse.ArgumentParser(
         prog=__file__,
         description="根据专辑歌单重命名音频文件并连接为全专单轨"
@@ -87,13 +89,20 @@ if __name__ == '__main__':
     except Exception as e:
         print(f"错误：{e}；无法读取专辑歌单文件，请检查文件路径和编码情况。")
         exit(1)
-    
+
     sorted_tracks = sort_tracks(tracklist, audio_dir)
     if isinstance(sorted_tracks, Exception):
         print(f"排序文件时发生错误：{sorted_tracks.args[0]}")
         exit(1)
-    
+
     concat_result = concat_tracks(sorted_tracks, output_file)
     if isinstance(concat_result, Exception):
         print(f"连接文件时发生错误：{concat_result.args[0]}")
         exit(1)
+
+__all__ = [
+    "find_target",
+    "sort_tracks",
+    "concat_tracks",
+    "cli"
+]
