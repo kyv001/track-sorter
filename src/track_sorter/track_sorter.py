@@ -1,26 +1,30 @@
 import pathlib
 import ffmpeg
+from returns.result import Result, Failure, Success
 
-def find_target(track: str, audio_dir: pathlib.Path) -> pathlib.Path | Exception:
+def find_target(track: str, audio_dir: pathlib.Path) -> Result[pathlib.Path, str]:
     matched = [*filter(lambda x: x.name.startswith(track), audio_dir.iterdir())]
     if len(matched) > 1:
-        return ValueError(f"找到多个匹配的音频文件: {', '.join([x.name for x in matched])}")
+        return Failure(f"找到多个匹配的音频文件: {', '.join([x.name for x in matched])}")
     if len(matched) == 0:
-        return FileNotFoundError(f"未找到匹配的音频文件: {track}")
+        return Failure(f"未找到匹配的音频文件: {track}")
     print(f"找到匹配的音频文件：{track} = {matched[0].name}")
-    return matched[0]
+    return Success(matched[0])
 
-def sort_tracks(tracklist: list[str], audio_dir: pathlib.Path) -> list[pathlib.Path] | Exception:
+def sort_tracks(tracklist: list[str], audio_dir: pathlib.Path) -> Result[list[pathlib.Path], str]:
+    if len(set(tracklist)) != len(tracklist):
+        return Failure("歌单中包含重复的曲目")
+
     index_digits = len(str(len(tracklist)))
     renaming_files: list[tuple[pathlib.Path, str]] = []
     for i, track in enumerate(tracklist, start=1):
         index = str(i).zfill(index_digits)
         target = find_target(track, audio_dir)
-        if isinstance(target, Exception):
-            print(f"错误：{target.args[0]}")
+        if isinstance(target, Failure):
+            print(f"错误：{target.failure()}")
             print("有错误发生，没有任何文件被重命名。")
-            return target
-        renaming_files.append((target, f"{index} - {target.name}"))
+            return Failure(target.failure())
+        renaming_files.append((target.unwrap(), f"{index} - {target.unwrap().name}"))
     
     for target, new_name in renaming_files:
         print(f"{target.name} ==> {new_name}")
@@ -28,11 +32,11 @@ def sort_tracks(tracklist: list[str], audio_dir: pathlib.Path) -> list[pathlib.P
             target.rename(audio_dir / new_name)
         except Exception as e:
             print(f"错误：{e}；文件重命名中发生错误，请检查文件名情况。")
-            return e
+            return Failure(str(e))
     
-    return [audio_dir / new_name for _, new_name in renaming_files]
+    return Success([audio_dir / new_name for _, new_name in renaming_files])
 
-def concat_tracks(tracklist: list[pathlib.Path], output_file: pathlib.Path) -> None | Exception:
+def concat_tracks(tracklist: list[pathlib.Path], output_file: pathlib.Path) -> Result[None, str]:
     try:
         # 为每个输入文件明确选择音频流
         audio_streams = []
@@ -48,7 +52,8 @@ def concat_tracks(tracklist: list[pathlib.Path], output_file: pathlib.Path) -> N
             .run()
         )
     except Exception as e:
-        return e
+        return Failure(str(e))
+    return Success(None)
 
 def cli():
     import argparse
@@ -91,13 +96,13 @@ def cli():
         exit(1)
 
     sorted_tracks = sort_tracks(tracklist, audio_dir)
-    if isinstance(sorted_tracks, Exception):
-        print(f"排序文件时发生错误：{sorted_tracks.args[0]}")
+    if isinstance(sorted_tracks, Failure):
+        print(f"排序文件时发生错误：{sorted_tracks.failure()}")
         exit(1)
 
-    concat_result = concat_tracks(sorted_tracks, output_file)
-    if isinstance(concat_result, Exception):
-        print(f"连接文件时发生错误：{concat_result.args[0]}")
+    concat_result = concat_tracks(sorted_tracks.unwrap(), output_file)
+    if isinstance(concat_result, Failure):
+        print(f"连接文件时发生错误：{concat_result.failure()}")
         exit(1)
 
 __all__ = [

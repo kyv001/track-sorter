@@ -1,11 +1,12 @@
 [project]
 name = "track-sorter"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sort your tracks using tracklists"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "ffmpeg-python>=0.2.0",
+    "returns>=0.26.0",
 ]
 
 [dependency-groups]
@@ -18,3 +19,7 @@ track-sorter = "track_sorter:cli"
 
 [tools.setuptools.package.find]
 where = ["src"]
+
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
