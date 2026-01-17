@@ -13,7 +13,12 @@ def find_target(track: str, audio_dir: pathlib.Path) -> Result[pathlib.Path, str
 
 def sort_tracks(tracklist: list[str], audio_dir: pathlib.Path) -> Result[list[pathlib.Path], str]:
     if len(set(tracklist)) != len(tracklist):
-        return Failure("歌单中包含重复的曲目")
+        sorted_tracklist = sorted(tracklist)
+        duplicated_names: list[str] = []
+        for i in range(len(sorted_tracklist) - 1):
+            if sorted_tracklist[i] == sorted_tracklist[i + 1]:
+                duplicated_names.append(sorted_tracklist[i])
+        return Failure(f"歌单中包含重复的曲目: {', '.join(duplicated_names)}")
 
     index_digits = len(str(len(tracklist)))
     renaming_files: list[tuple[pathlib.Path, str]] = []
