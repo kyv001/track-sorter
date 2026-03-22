@@ -17,9 +17,6 @@ dev = [
 [project.scripts]
 track-sorter = "track_sorter:cli"
 
-[tools.setuptools.package.find]
-where = ["src"]
-
 [build-system]
 requires = ["hatchling >= 1.26"]
 build-backend = "hatchling.build"
