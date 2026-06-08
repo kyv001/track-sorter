@@ -30,7 +30,7 @@ def sort_tracks(tracklist: list[str], audio_dir: pathlib.Path) -> Result[list[pa
             print("有错误发生，没有任何文件被重命名。")
             return Failure(target.failure())
         renaming_files.append((target.unwrap(), f"{index} - {target.unwrap().name}"))
-    
+
     for target, new_name in renaming_files:
         print(f"{target.name} ==> {new_name}")
         try:
@@ -38,7 +38,7 @@ def sort_tracks(tracklist: list[str], audio_dir: pathlib.Path) -> Result[list[pa
         except Exception as e:
             print(f"错误：{e}；文件重命名中发生错误，请检查文件名情况。")
             return Failure(str(e))
-    
+
     return Success([audio_dir / new_name for _, new_name in renaming_files])
 
 def concat_tracks(tracklist: list[pathlib.Path], output_file: pathlib.Path) -> Result[None, str]:
@@ -49,11 +49,16 @@ def concat_tracks(tracklist: list[pathlib.Path], output_file: pathlib.Path) -> R
             input_file = ffmpeg.input(str(track.resolve()))
             # 明确选择第一个音频流
             audio_streams.append(input_file['a:0'])
-        
+
         # 使用ffmpeg.concat连接所有音频流，并设置专辑名元数据
         (
             ffmpeg.concat(*audio_streams, v=0, a=1)
-            .output(str(output_file.resolve()), metadata=f"title={output_file.stem}")
+            .output(
+                str(output_file.resolve()),
+                metadata=f"title={output_file.stem}",
+                format="mp3",
+                audio_bitrate=320
+            )
             .run()
         )
     except Exception as e:
@@ -87,7 +92,7 @@ def cli():
     args = parser.parse_args()
     audio_dir = args.audio_dir
     tracklist = args.tracklist or (audio_dir / "tracklist.txt")
-    output_file = args.output_file or (audio_dir / f"{audio_dir.name} - Full Album.flac")
+    output_file = args.output_file or (audio_dir / f"{audio_dir.name} - Full Album.mp3")
 
     print(f"正在处理目录：{audio_dir}")
     print(f"正在使用歌单文件：{tracklist}")
