@@ -57,7 +57,7 @@ def concat_tracks(tracklist: list[pathlib.Path], output_file: pathlib.Path) -> R
                 str(output_file.resolve()),
                 metadata=f"title={output_file.stem}",
                 format="mp3",
-                audio_bitrate=320
+                audio_bitrate=320_000 # 320kbps
             )
             .run()
         )
