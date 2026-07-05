@@ -89,10 +89,16 @@ def cli():
         type=pathlib.Path,
         help="输出文件路径，将重命名后的音频文件连接为全专单轨，默认为“【目录名】 - Full Album.mp3”",
     )
+    parser.add_argument(
+        "--no-full-album",
+        action="store_true",
+        help="不生成全专单轨，仅重命名音频文件",
+    )
     args = parser.parse_args()
     audio_dir = args.audio_dir
     tracklist = args.tracklist or (audio_dir / "tracklist.txt")
     output_file = args.output_file or (audio_dir / f"{audio_dir.name} - Full Album.mp3")
+    no_full_album = args.no_full_album
 
     print(f"正在处理目录：{audio_dir}")
     print(f"正在使用歌单文件：{tracklist}")
@@ -109,6 +115,10 @@ def cli():
     if isinstance(sorted_tracks, Failure):
         print(f"排序文件时发生错误：{sorted_tracks.failure()}")
         exit(1)
+
+    if no_full_album:
+        print("已跳过生成全专单轨")
+        exit(0)
 
     concat_result = concat_tracks(sorted_tracks.unwrap(), output_file)
     if isinstance(concat_result, Failure):

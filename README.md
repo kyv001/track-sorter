@@ -45,6 +45,7 @@ uv run track-sorter -d /path/to/audio -l tracklist.txt -o output.flac
 | `--audio-dir` | `-d` | 音频文件所在目录 | 当前目录 |
 | `--tracklist` | `-l` | 歌单文件路径 | `tracklist.txt` |
 | `--output-file` | `-o` | 输出文件路径 | `【目录名】 - Full Album.flac` |
+| `--no-full-album` |  | 不输出完整专辑文件 |  |
 
 ### 完整示例
 
@@ -119,7 +120,7 @@ O
 3 - Outro.flac
 ```
 
-并生成合并后的单轨文件：`Album - Full Album.flac`
+并生成合并后的单轨文件：`Album - Full Album.flac`（使用 `--no-full-album` 可跳过这一步）
 
 ## 依赖要求
 
